@@ -1,0 +1,177 @@
+datasource postgres {
+  provider = "postgresql"
+  url      = env("POSTGRESQL_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  createdAt DateTime @default(now())
+  email     String   @unique
+  firstName String?
+  id        String   @id @default(cuid())
+  lastName  String?
+  password  String
+  roles     String[]
+  updatedAt DateTime @updatedAt
+  username  String   @unique
+}
+
+model Entity {
+  createdAt     DateTime      @default(now())
+  description   String?
+  displayName   String        @unique
+  ELP           Json?
+  entitiesLogic EntityLogic[]
+  fields        Field[]
+  hooks         Hook[]
+  id            String        @id @default(cuid())
+  name          String        @unique
+  updatedAt     DateTime      @updatedAt
+}
+
+model Field {
+  createdAt   DateTime       @default(now())
+  description String?
+  displayName String         @unique
+  entity      Entity?        @relation(fields: [entityId], references: [id])
+  entityId    String?
+  id          String         @id @default(cuid())
+  name        String         @unique
+  type        EnumFieldType?
+  updatedAt   DateTime       @updatedAt
+  validation  Json?
+}
+
+model EntityLogic {
+  createdAt   DateTime @default(now())
+  description String?
+  displayName String   @unique
+  entity      Entity?  @relation(fields: [entityId], references: [id])
+  entityId    String?
+  hooks       Hook[]
+  id          String   @id @default(cuid())
+  name        String   @unique
+  updatedAt   DateTime @updatedAt
+}
+
+model Webhook {
+  createdAt   DateTime @default(now())
+  description String?
+  displayName String   @unique
+  id          String   @id @default(cuid())
+  name        String   @unique
+  updatedAt   DateTime @updatedAt
+}
+
+model Function {
+  branch      String?
+  createdAt   DateTime @default(now())
+  description String?
+  displayName String?
+  hooks       Hook[]
+  id          String   @id @default(cuid())
+  name        String?
+  repository  String?
+  updatedAt   DateTime @updatedAt
+}
+
+model Hook {
+  createdAt     DateTime     @default(now())
+  description   String?
+  displayName   String?
+  entity        Entity?      @relation(fields: [entityId], references: [id])
+  entityId      String?
+  entityLogic   EntityLogic? @relation(fields: [entityLogicId], references: [id])
+  entityLogicId String?
+  event         String?
+  function      Function?    @relation(fields: [functionId], references: [id])
+  functionId    String?
+  id            String       @id @default(cuid())
+  name          String?
+  updatedAt     DateTime     @updatedAt
+}
+
+model Navigation {
+  createdAt   DateTime     @default(now())
+  displayName String?
+  id          String       @id @default(cuid())
+  locale      String?
+  name        String?
+  navigations Navigation[] @relation(name: "parent")
+  page        Page?        @relation(fields: [pageId], references: [id])
+  pageId      String?
+  parent      Navigation?  @relation(name: "parent", fields: [parentId], references: [id])
+  parentId    String?
+  path        String?      @unique
+  role        String?
+  updatedAt   DateTime     @updatedAt
+}
+
+model Application {
+  block       String?
+  createdAt   DateTime              @default(now())
+  description String?
+  displayName String                @unique
+  id          String                @id @default(cuid())
+  name        String
+  type        EnumApplicationType[]
+  updatedAt   DateTime              @updatedAt
+  url         String?
+}
+
+model Integration {
+  createdAt   DateTime @default(now())
+  description String?
+  displayName String?
+  id          String   @id @default(cuid())
+  name        String?
+  type        String?
+  updatedAt   DateTime @updatedAt
+}
+
+model Authenticator {
+  authData    Json?
+  createdAt   DateTime @default(now())
+  displayName String?
+  id          String   @id @default(cuid())
+  type        String?
+  updatedAt   DateTime @updatedAt
+}
+
+model Role {
+  createdAt DateTime @default(now())
+  id        String   @id @default(cuid())
+  name      String?
+  updatedAt DateTime @updatedAt
+}
+
+model Page {
+  createdAt   DateTime     @default(now())
+  description String?
+  displayName String       @unique
+  id          String       @id @default(cuid())
+  name        String       @unique
+  navigations Navigation[]
+  params      Json?
+  type        String?
+  updatedAt   DateTime     @updatedAt
+}
+
+enum EnumFieldType {
+  text
+  textarea
+  Option
+  float
+  integer
+  dateTime
+  boolean
+}
+
+enum EnumApplicationType {
+  repository
+  url
+  block
+}
